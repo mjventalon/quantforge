@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <string>
 
 namespace qf {
 

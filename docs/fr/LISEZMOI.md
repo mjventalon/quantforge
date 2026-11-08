@@ -10,7 +10,7 @@
   <a href="#-démarrage-rapide"><b>🚀 Démarrage rapide</b></a> ·
   <a href="#-ce-quil-y-a-dedans"><b>🧰 Outils</b></a> ·
   <a href="../tutorials"><b>📚 Tutoriels</b></a> ·
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/releases"><b>⬇️ Télécharger</b></a> ·
+  <a href="https://github.com/mjventalon/quantforge/releases"><b>⬇️ Télécharger</b></a> ·
   <a href="https://www.linkedin.com/in/marin-ventalon"><b>👤 Créateur</b></a>
 </p>
 
@@ -36,14 +36,14 @@ décompressez-le, puis double-cliquez sur :
   car macOS bloque les fichiers téléchargés.
 * **Windows** : `Start quantforge.bat`
 
-Le premier lancement installe tout automatiquement, ce qui prend quelques minutes. Python 3.10
+Le premier lancement installe tout automatiquement, ce qui prend quelques minutes. Python 3.11
 ou plus récent doit être installé ([python.org](https://www.python.org/downloads/) ; sous
 Windows, cochez *Add Python to PATH*).
 
 **Avec le terminal :**
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/quantforge.git
+git clone https://github.com/mjventalon/quantforge.git
 cd quantforge
 python -m venv .venv
 source .venv/bin/activate
