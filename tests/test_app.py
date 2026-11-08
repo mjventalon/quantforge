@@ -85,6 +85,7 @@ def offline(monkeypatch, tmp_path):
     monkeypatch.setattr(FredProvider, "inflation_yoy",
                         lambda self, as_of=None: (0.029, pd.Timestamp("2026-09-01")))
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # Windows home
     uni = importlib.import_module("quantforge.data.universe")
     monkeypatch.setattr(uni, "sec_universe", lambda *a, **k: {})
     yf = pytest.importorskip("yfinance")

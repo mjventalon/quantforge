@@ -182,15 +182,17 @@ def run_exercise(ex: Exercise, code: str, timeout: float = 30.0,
         raise PermissionError("code execution is disabled on this server")
     pre = _limits if os.name == "posix" else None
     env = {k: v for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "SYSTEMROOT",
-                                                        "TMPDIR", "TEMP", "TMP")}
+                                                        "TMPDIR", "TEMP", "TMP", "USERPROFILE")}
+    env["PYTHONUTF8"] = "1"            # same text encoding on Windows as on macOS/Linux
+    env["PYTHONIOENCODING"] = "utf-8"
     with tempfile.TemporaryDirectory(prefix="qf_ex_") as tmp:
         if ex.language == "python":
             prog = Path(tmp) / "run.py"
             prog.write_text(python_harness(ex, code), encoding="utf-8")
             try:
                 p = subprocess.run([sys.executable, "-I", str(prog)], cwd=tmp, env=env,
-                                   capture_output=True, text=True, timeout=timeout,
-                                   preexec_fn=pre)
+                                   capture_output=True, text=True, encoding="utf-8",
+                                   errors="replace", timeout=timeout, preexec_fn=pre)
             except subprocess.TimeoutExpired:
                 return [TestResult("time limit", False, f"your code ran longer than {timeout:.0f} s")]
             for line in p.stdout.splitlines():
@@ -202,11 +204,13 @@ def run_exercise(ex: Exercise, code: str, timeout: float = 30.0,
         if cxx is None:
             return [TestResult("compiler", False, "no C++ compiler found (macOS: "
                                                   "`xcode-select --install`)")]
-        src, exe = Path(tmp) / "exercise.cpp", Path(tmp) / "exercise"
+        src = Path(tmp) / "exercise.cpp"
+        exe = Path(tmp) / ("exercise.exe" if os.name == "nt" else "exercise")
         src.write_text(cpp_source(ex, code), encoding="utf-8")
         try:
             c = subprocess.run([cxx, "-std=c++17", "-O2", str(src), "-o", str(exe)], cwd=tmp,
-                               env=env, capture_output=True, text=True, timeout=120)
+                               env=env, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=120)
         except subprocess.TimeoutExpired:
             return [TestResult("it compiles", False, "the compiler timed out")]
         if c.returncode != 0:
@@ -214,7 +218,8 @@ def run_exercise(ex: Exercise, code: str, timeout: float = 30.0,
             return [TestResult("it compiles", False, err.strip()[-1500:])]
         try:
             r = subprocess.run([str(exe)], cwd=tmp, env=env, capture_output=True, text=True,
-                               timeout=timeout, preexec_fn=pre)
+                               encoding="utf-8", errors="replace", timeout=timeout,
+                               preexec_fn=pre)
         except subprocess.TimeoutExpired:
             return [TestResult("time limit", False, f"your program ran longer than {timeout:.0f} s")]
         res = _parse_cpp(r.stdout)

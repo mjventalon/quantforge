@@ -114,7 +114,7 @@ def sec_universe(max_age_days: float = 7.0, user_agent: str | None = None) -> di
     path = _cache_dir() / "sec_company_tickers.json"
     if path.exists() and time.time() - path.stat().st_mtime < max_age_days * 86400:
         try:
-            return json.loads(path.read_text())
+            return json.loads(path.read_text(encoding="utf-8"))
         except ValueError:
             pass
     ua = user_agent or os.environ.get("QUANTFORGE_SEC_USER_AGENT")
@@ -127,7 +127,7 @@ def sec_universe(max_age_days: float = 7.0, user_agent: str | None = None) -> di
         r.raise_for_status()
         raw = r.json()
         out = {v["ticker"].upper().replace(".", "-"): v["title"] for v in raw.values()}
-        path.write_text(json.dumps(out))
+        path.write_text(json.dumps(out), encoding="utf-8")
         return out
     except Exception:  # noqa: BLE001
         return {}
