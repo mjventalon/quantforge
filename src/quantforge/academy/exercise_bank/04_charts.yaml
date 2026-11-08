@@ -1,0 +1,43 @@
+- id: py_sma
+  chapter: 4
+  language: python
+  title: "Moving average from scratch"
+  difficulty: 1
+  prompt: |
+    Write `sma(prices, window)` that returns a **list** the same length as `prices`, where element
+    `i` is the average of the last `window` prices ending at `i`, and `None` for the first
+    `window − 1` positions (there is not enough history yet). Use loops — no pandas.
+  starter: |
+    def sma(prices, window):
+        out = []
+        # your code here
+        return out
+  hints:
+    - "For i < window − 1 append None."
+    - "Otherwise average prices[i − window + 1 : i + 1]."
+  solution: |
+    def sma(prices, window):
+        out = []
+        for i in range(len(prices)):
+            if i < window - 1:
+                out.append(None)
+            else:
+                chunk = prices[i - window + 1:i + 1]
+                out.append(sum(chunk) / window)
+        return out
+  tests:
+    - name: "same length as the input"
+      code: "assert len(sma([1, 2, 3, 4, 5], 3)) == 5"
+    - name: "first values are None"
+      code: "assert sma([1, 2, 3, 4, 5], 3)[:2] == [None, None]"
+    - name: "3-day averages are correct"
+      code: "assert sma([1, 2, 3, 4, 5], 3)[2:] == [2.0, 3.0, 4.0]"
+    - name: "matches pandas rolling mean"
+      code: |
+        import random
+        random.seed(1)
+        p = [100 + random.gauss(0, 1) for _ in range(60)]
+        out = sma(p, 20)
+        for i in range(19, 60):
+            ref = sum(p[i - 19:i + 1]) / 20
+            assert abs(out[i] - ref) < 1e-12

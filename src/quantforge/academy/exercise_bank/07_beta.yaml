@@ -1,0 +1,51 @@
+- id: py_beta
+  chapter: 7
+  language: python
+  title: "Beta and correlation"
+  difficulty: 2
+  prompt: |
+    * `beta(asset, market)` — the slope of the regression of asset returns on market returns:
+      **Cov(asset, market) / Var(market)** (use the same `ddof` for both).
+    * `correlation(x, y)` — Pearson correlation, written with means and sums (no `np.corrcoef`).
+  starter: |
+    import numpy as np
+
+    def beta(asset, market):
+        pass
+
+    def correlation(x, y):
+        pass
+  hints:
+    - "np.cov(a, m)[0, 1] / np.var(m, ddof=1)"
+    - "corr = Σ(x−x̄)(y−ȳ) / √(Σ(x−x̄)² Σ(y−ȳ)²)"
+  solution: |
+    import numpy as np
+
+    def beta(asset, market):
+        a, m = np.asarray(asset, float), np.asarray(market, float)
+        return np.cov(a, m, ddof=1)[0, 1] / m.var(ddof=1)
+
+    def correlation(x, y):
+        x, y = np.asarray(x, float), np.asarray(y, float)
+        dx, dy = x - x.mean(), y - y.mean()
+        return (dx * dy).sum() / np.sqrt((dx ** 2).sum() * (dy ** 2).sum())
+  tests:
+    - name: "an asset that moves 1.5× the market has beta 1.5"
+      code: |
+        import numpy as np
+        m = np.random.default_rng(1).standard_normal(250) * 0.01
+        assert abs(beta(1.5 * m + 0.0002, m) - 1.5) < 1e-10
+    - name: "beta equals the OLS slope"
+      code: |
+        import numpy as np
+        rng = np.random.default_rng(2)
+        m = rng.standard_normal(500) * 0.01
+        a = 0.8 * m + rng.standard_normal(500) * 0.01
+        slope = np.polyfit(m, a, 1)[0]
+        assert abs(beta(a, m) - slope) < 1e-10
+    - name: "correlation matches np.corrcoef"
+      code: |
+        import numpy as np
+        rng = np.random.default_rng(3)
+        x = rng.standard_normal(300); y = 0.4 * x + rng.standard_normal(300)
+        assert abs(correlation(x, y) - np.corrcoef(x, y)[0, 1]) < 1e-12

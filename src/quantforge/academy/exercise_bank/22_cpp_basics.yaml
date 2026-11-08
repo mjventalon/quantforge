@@ -1,0 +1,84 @@
+- id: cpp_future_value
+  chapter: 22
+  language: cpp
+  title: "Your first C++ function: compound interest"
+  difficulty: 1
+  prompt: |
+    Write `double future_value(double pv, double rate, int years)` that returns
+    **pv × (1 + rate)^years** using a `for` loop (no `std::pow`), and
+    `int years_to_double(double rate)` — the smallest whole number of years for which the value
+    at least doubles.
+  starter: |
+    double future_value(double pv, double rate, int years) {
+        double value = pv;
+        // loop here
+        return value;
+    }
+
+    int years_to_double(double rate) {
+        return 0;
+    }
+  hints:
+    - "for (int y = 0; y < years; ++y) value *= 1.0 + rate;"
+    - "int y = 0; double v = 1.0; while (v < 2.0) { v *= 1.0 + rate; ++y; }"
+  solution: |
+    double future_value(double pv, double rate, int years) {
+        double value = pv;
+        for (int y = 0; y < years; ++y) value *= 1.0 + rate;
+        return value;
+    }
+
+    int years_to_double(double rate) {
+        int y = 0;
+        double v = 1.0;
+        while (v < 2.0) { v *= 1.0 + rate; ++y; }
+        return y;
+    }
+  tests: |
+    CHECK_NEAR("1000 at 5% for 10 years = 1628.89", future_value(1000, 0.05, 10), 1628.894626777442, 1e-9);
+    CHECK_NEAR("0 years leaves the value unchanged", future_value(250, 0.07, 0), 250, 0);
+    CHECK("7% doubles in 11 years", years_to_double(0.07) == 11);
+    CHECK("10% doubles in 8 years", years_to_double(0.10) == 8);
+
+- id: cpp_mean_std
+  chapter: 22
+  language: cpp
+  title: "Vectors, references and const: mean and standard deviation"
+  difficulty: 2
+  prompt: |
+    Write two functions that take a vector **by const reference** (no copy):
+
+    ```cpp
+    double mean(const std::vector<double>& x);
+    double stdev(const std::vector<double>& x);   // sample standard deviation (n − 1)
+    ```
+  starter: |
+    double mean(const std::vector<double>& x) {
+        return 0.0;
+    }
+
+    double stdev(const std::vector<double>& x) {
+        return 0.0;
+    }
+  hints:
+    - "Range-for: for (double v : x) sum += v;"
+    - "std::sqrt(ss / (x.size() - 1))"
+  solution: |
+    double mean(const std::vector<double>& x) {
+        double s = 0.0;
+        for (double v : x) s += v;
+        return s / x.size();
+    }
+
+    double stdev(const std::vector<double>& x) {
+        const double m = mean(x);
+        double ss = 0.0;
+        for (double v : x) ss += (v - m) * (v - m);
+        return std::sqrt(ss / (x.size() - 1));
+    }
+  tests: |
+    std::vector<double> x = {2, 4, 4, 4, 5, 5, 7, 9};
+    CHECK_NEAR("mean = 5", mean(x), 5.0, 1e-15);
+    CHECK_NEAR("sample stdev = 2.138", stdev(x), 2.138089935299395, 1e-12);
+    std::vector<double> c(10, 3.5);
+    CHECK_NEAR("constant vector has stdev 0", stdev(c), 0.0, 1e-15);

@@ -1,0 +1,125 @@
+- id: py_crr_tree
+  chapter: 14
+  language: python
+  title: "American put on a binomial tree"
+  difficulty: 3
+  prompt: |
+    Write `crr_put(S, K, T, r, sigma, steps, american=True)` using a Cox-Ross-Rubinstein tree:
+    `u = e^(σ√Δt)`, `d = 1/u`, `p = (e^(rΔt) − d)/(u − d)`. Start from the payoffs at expiry and
+    step backwards; for an **American** option take `max(continuation, K − S_node)` at every node.
+
+    Check: Hull's American put (S=K=50, T=5/12, r=10 %, σ=40 %) is about **4.28**.
+  starter: |
+    import math
+
+    def crr_put(S, K, T, r, sigma, steps, american=True):
+        dt = T / steps
+        # your code here
+        pass
+  hints:
+    - "Terminal prices: S·u^j·d^(steps−j) for j = 0..steps"
+    - "value[j] = e^(−rΔt)·(p·value[j+1] + (1−p)·value[j]) at each earlier step"
+  solution: |
+    import math
+
+    def crr_put(S, K, T, r, sigma, steps, american=True):
+        dt = T / steps
+        u = math.exp(sigma * math.sqrt(dt)); d = 1 / u
+        p = (math.exp(r * dt) - d) / (u - d)
+        disc = math.exp(-r * dt)
+        values = [max(K - S * u ** j * d ** (steps - j), 0.0) for j in range(steps + 1)]
+        for n in range(steps - 1, -1, -1):
+            for j in range(n + 1):
+                cont = disc * (p * values[j + 1] + (1 - p) * values[j])
+                values[j] = max(cont, K - S * u ** j * d ** (n - j)) if american else cont
+        return values[0]
+  tests:
+    - name: "Hull 21.1: American put ≈ 4.28"
+      code: "assert abs(crr_put(50, 50, 5 / 12, 0.10, 0.40, 500) - 4.28) < 0.01"
+    - name: "European tree converges to Black-Scholes"
+      code: |
+        import math
+        def n(x): return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+        d1 = (math.log(1) + (0.1 + 0.08) * 5 / 12) / (0.4 * math.sqrt(5 / 12)); d2 = d1 - 0.4 * math.sqrt(5 / 12)
+        bs = 50 * math.exp(-0.1 * 5 / 12) * n(-d2) - 50 * n(-d1)
+        assert abs(crr_put(50, 50, 5 / 12, 0.10, 0.40, 800, american=False) - bs) < 0.01
+    - name: "American ≥ European"
+      code: "assert crr_put(50, 55, 1, 0.08, 0.3, 200) >= crr_put(50, 55, 1, 0.08, 0.3, 200, american=False)"
+
+- id: py_monte_carlo
+  chapter: 14
+  language: python
+  title: "Monte-Carlo with a confidence interval"
+  difficulty: 3
+  prompt: |
+    Write `mc_call(S, K, T, r, sigma, n, seed=0)` that simulates **n** terminal prices
+    `S_T = S·exp((r − σ²/2)T + σ√T·Z)` with `np.random.default_rng(seed).standard_normal(n)`,
+    and returns a tuple **(price, standard_error)** where price is the mean discounted payoff
+    and the standard error is `std(ddof=1)/√n` of the discounted payoffs.
+  starter: |
+    import numpy as np
+
+    def mc_call(S, K, T, r, sigma, n, seed=0):
+        z = np.random.default_rng(seed).standard_normal(n)
+        # your code here
+        pass
+  hints:
+    - "payoff = np.maximum(ST − K, 0) * np.exp(−r*T)"
+  solution: |
+    import numpy as np
+
+    def mc_call(S, K, T, r, sigma, n, seed=0):
+        z = np.random.default_rng(seed).standard_normal(n)
+        st = S * np.exp((r - 0.5 * sigma ** 2) * T + sigma * np.sqrt(T) * z)
+        pay = np.exp(-r * T) * np.maximum(st - K, 0.0)
+        return float(pay.mean()), float(pay.std(ddof=1) / np.sqrt(n))
+  tests:
+    - name: "returns (price, standard error)"
+      code: "out = mc_call(100, 100, 1, 0.05, 0.2, 1000); assert len(out) == 2 and out[1] > 0"
+    - name: "within 4 standard errors of Black-Scholes (10.4506)"
+      code: |
+        p, se = mc_call(100, 100, 1, 0.05, 0.2, 400_000, seed=7)
+        assert abs(p - 10.450583572185565) < 4 * se, (p, se)
+    - name: "4× the paths halves the error"
+      code: |
+        _, a = mc_call(100, 100, 1, 0.05, 0.2, 50_000, 1); _, b = mc_call(100, 100, 1, 0.05, 0.2, 200_000, 2)
+        assert 0.4 < b / a < 0.6
+
+- id: cpp_binomial
+  chapter: 14
+  language: cpp
+  title: "Binomial tree in C++ with std::vector"
+  difficulty: 3
+  prompt: |
+    Write `double crr_put(double S, double K, double T, double r, double sigma, int steps, bool american)`
+    in C++ with a `std::vector<double>` of node values (`<vector>`, `<cmath>` and `<algorithm>` are
+    included). Same algorithm as the Python exercise — but notice how much faster it runs.
+  starter: |
+    double crr_put(double S, double K, double T, double r, double sigma, int steps, bool american) {
+        const double dt = T / steps;
+        std::vector<double> v(steps + 1);
+        // your code here
+        return 0.0;
+    }
+  hints:
+    - "double u = std::exp(sigma * std::sqrt(dt)), d = 1.0 / u;"
+    - "for (int n = steps - 1; n >= 0; --n) for (int j = 0; j <= n; ++j) { ... }"
+  solution: |
+    double crr_put(double S, double K, double T, double r, double sigma, int steps, bool american) {
+        const double dt = T / steps;
+        const double u = std::exp(sigma * std::sqrt(dt)), d = 1.0 / u;
+        const double p = (std::exp(r * dt) - d) / (u - d), disc = std::exp(-r * dt);
+        std::vector<double> v(steps + 1);
+        for (int j = 0; j <= steps; ++j)
+            v[j] = std::max(K - S * std::pow(u, j) * std::pow(d, steps - j), 0.0);
+        for (int n = steps - 1; n >= 0; --n)
+            for (int j = 0; j <= n; ++j) {
+                const double cont = disc * (p * v[j + 1] + (1 - p) * v[j]);
+                v[j] = american ? std::max(cont, K - S * std::pow(u, j) * std::pow(d, n - j)) : cont;
+            }
+        return v[0];
+    }
+  tests: |
+    CHECK_NEAR("Hull 21.1: American put ≈ 4.28", crr_put(50, 50, 5.0 / 12, 0.10, 0.40, 2000, true), 4.284, 3e-3);
+    CHECK("American ≥ European", crr_put(50, 55, 1, 0.08, 0.3, 300, true) >= crr_put(50, 55, 1, 0.08, 0.3, 300, false));
+    CHECK_NEAR("European → Black-Scholes (put 4.0760)", crr_put(50, 50, 5.0 / 12, 0.10, 0.40, 2000, false), 4.0760, 2e-3);

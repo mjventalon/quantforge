@@ -1,0 +1,121 @@
+- id: py_black_scholes
+  chapter: 13
+  language: python
+  title: "Black-Scholes from the formula"
+  difficulty: 3
+  prompt: |
+    Re-implement Black-Scholes with only `math`:
+
+    * `norm_cdf(x)` — the standard normal CDF, via `math.erf`: **N(x) = ½(1 + erf(x/√2))**.
+    * `bs_call(S, K, T, r, sigma)` and `bs_put(S, K, T, r, sigma)` (no dividends).
+    * `call_delta(S, K, T, r, sigma)` = **N(d₁)**.
+
+    Check: Hull's example S=42, K=40, T=0.5, r=10 %, σ=20 % gives a call of **4.7594**.
+  starter: |
+    import math
+
+    def norm_cdf(x):
+        pass
+
+    def bs_call(S, K, T, r, sigma):
+        pass
+
+    def bs_put(S, K, T, r, sigma):
+        pass
+
+    def call_delta(S, K, T, r, sigma):
+        pass
+  hints:
+    - "d1 = (ln(S/K) + (r + σ²/2)T) / (σ√T), d2 = d1 − σ√T"
+    - "call = S·N(d1) − K·e^(−rT)·N(d2); put = K·e^(−rT)·N(−d2) − S·N(−d1)"
+  solution: |
+    import math
+
+    def norm_cdf(x):
+        return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+
+    def _d(S, K, T, r, sigma):
+        d1 = (math.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * math.sqrt(T))
+        return d1, d1 - sigma * math.sqrt(T)
+
+    def bs_call(S, K, T, r, sigma):
+        d1, d2 = _d(S, K, T, r, sigma)
+        return S * norm_cdf(d1) - K * math.exp(-r * T) * norm_cdf(d2)
+
+    def bs_put(S, K, T, r, sigma):
+        d1, d2 = _d(S, K, T, r, sigma)
+        return K * math.exp(-r * T) * norm_cdf(-d2) - S * norm_cdf(-d1)
+
+    def call_delta(S, K, T, r, sigma):
+        return norm_cdf(_d(S, K, T, r, sigma)[0])
+  tests:
+    - name: "N(0) = 0.5 and N(1.96) ≈ 0.975"
+      code: "assert abs(norm_cdf(0) - 0.5) < 1e-15 and abs(norm_cdf(1.96) - 0.9750021048517795) < 1e-12"
+    - name: "Hull 15.6: call = 4.7594"
+      code: "assert abs(bs_call(42, 40, 0.5, 0.10, 0.20) - 4.759422392871532) < 1e-9"
+    - name: "Hull 15.6: put = 0.8086"
+      code: "assert abs(bs_put(42, 40, 0.5, 0.10, 0.20) - 0.8085993729000922) < 1e-9"
+    - name: "put-call parity holds"
+      code: |
+        import math
+        c, p = bs_call(100, 95, 0.7, 0.03, 0.31), bs_put(100, 95, 0.7, 0.03, 0.31)
+        assert abs(c - p - (100 - 95 * math.exp(-0.03 * 0.7))) < 1e-10
+    - name: "delta = numerical derivative of the price"
+      code: |
+        h = 1e-5
+        num = (bs_call(100 + h, 100, 1, 0.02, 0.25) - bs_call(100 - h, 100, 1, 0.02, 0.25)) / (2 * h)
+        assert abs(call_delta(100, 100, 1, 0.02, 0.25) - num) < 1e-7
+
+- id: cpp_black_scholes
+  chapter: 13
+  language: cpp
+  title: "Black-Scholes in C++"
+  difficulty: 3
+  prompt: |
+    Now the same in **C++17**. Write
+
+    ```cpp
+    double norm_cdf(double x);
+    double bs_call(double S, double K, double T, double r, double sigma);
+    double bs_put (double S, double K, double T, double r, double sigma);
+    ```
+
+    `<cmath>` is already included: use `std::erfc` (accurate in the tails):
+    **N(x) = ½·erfc(−x/√2)**, `std::log`, `std::exp`, `std::sqrt`.
+  starter: |
+    double norm_cdf(double x) {
+        // your code here
+        return 0.0;
+    }
+
+    double bs_call(double S, double K, double T, double r, double sigma) {
+        return 0.0;
+    }
+
+    double bs_put(double S, double K, double T, double r, double sigma) {
+        return 0.0;
+    }
+  hints:
+    - "double d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));"
+    - "1/√2 can be written std::sqrt(0.5)"
+  solution: |
+    double norm_cdf(double x) { return 0.5 * std::erfc(-x * std::sqrt(0.5)); }
+
+    double bs_call(double S, double K, double T, double r, double sigma) {
+        const double d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));
+        const double d2 = d1 - sigma * std::sqrt(T);
+        return S * norm_cdf(d1) - K * std::exp(-r * T) * norm_cdf(d2);
+    }
+
+    double bs_put(double S, double K, double T, double r, double sigma) {
+        const double d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));
+        const double d2 = d1 - sigma * std::sqrt(T);
+        return K * std::exp(-r * T) * norm_cdf(-d2) - S * norm_cdf(-d1);
+    }
+  tests: |
+    CHECK_NEAR("N(0) = 0.5", norm_cdf(0.0), 0.5, 1e-15);
+    CHECK_NEAR("N(-8) is tiny but not zero", norm_cdf(-8.0) * 1e15, 0.6220960574271785, 1e-9);
+    CHECK_NEAR("Hull 15.6 call = 4.7594", bs_call(42, 40, 0.5, 0.10, 0.20), 4.759422392871532, 1e-9);
+    CHECK_NEAR("Hull 15.6 put = 0.8086", bs_put(42, 40, 0.5, 0.10, 0.20), 0.8085993729000922, 1e-9);
+    CHECK_NEAR("put-call parity", bs_call(100, 95, 0.7, 0.03, 0.31) - bs_put(100, 95, 0.7, 0.03, 0.31),
+               100 - 95 * std::exp(-0.03 * 0.7), 1e-10);

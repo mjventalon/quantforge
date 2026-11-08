@@ -1,0 +1,46 @@
+- id: py_logistic
+  chapter: 19
+  language: python
+  title: "Default probability with a logistic model"
+  difficulty: 2
+  prompt: |
+    A logistic credit model says **PD = 1 / (1 + e^(−(b₀ + b·x)))**.
+
+    * `pd_logit(x, b0, b)` — the PD for a feature vector `x` and coefficients `b` (NumPy arrays).
+    * `log_loss(y, p)` — the average negative log-likelihood
+      **−mean(y·ln p + (1 − y)·ln(1 − p))**, clipping `p` to `[1e-12, 1 − 1e-12]`.
+  starter: |
+    import numpy as np
+
+    def pd_logit(x, b0, b):
+        pass
+
+    def log_loss(y, p):
+        pass
+  hints:
+    - "z = b0 + np.dot(x, b); 1 / (1 + np.exp(-z))"
+  solution: |
+    import numpy as np
+
+    def pd_logit(x, b0, b):
+        z = b0 + np.dot(np.asarray(x, float), np.asarray(b, float))
+        return 1.0 / (1.0 + np.exp(-z))
+
+    def log_loss(y, p):
+        y = np.asarray(y, float)
+        p = np.clip(np.asarray(p, float), 1e-12, 1 - 1e-12)
+        return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
+  tests:
+    - name: "z = 0 gives PD = 50%"
+      code: "assert abs(pd_logit([0, 0], 0, [1, 2]) - 0.5) < 1e-15"
+    - name: "works on a matrix of borrowers"
+      code: |
+        import numpy as np
+        X = np.array([[1.0, 0.0], [0.0, 2.0]])
+        p = pd_logit(X, -1, np.array([2.0, -0.5]))
+        assert np.allclose(p, [1 / (1 + np.exp(-1)), 1 / (1 + np.exp(2))])
+    - name: "log loss of a perfect forecast ≈ 0, of a coin flip = ln 2"
+      code: |
+        import math
+        assert log_loss([1, 0], [1, 0]) < 1e-10
+        assert abs(log_loss([1, 0, 1, 0], [0.5] * 4) - math.log(2)) < 1e-12

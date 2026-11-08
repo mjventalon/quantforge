@@ -1,0 +1,99 @@
+- id: py_vectorize
+  chapter: 21
+  language: python
+  title: "Replace a loop with NumPy"
+  difficulty: 1
+  prompt: |
+    The function below works but loops in pure Python. Rewrite `daily_returns(prices)` **without any
+    `for` loop** using NumPy slicing, and write `growth_of_one(returns)` that returns the value of
+    1 invested, day after day: the cumulative product of `1 + r` (`np.cumprod`).
+
+    ```python
+    def daily_returns_slow(prices):
+        out = []
+        for i in range(1, len(prices)):
+            out.append(prices[i] / prices[i - 1] - 1)
+        return out
+    ```
+  starter: |
+    import numpy as np
+
+    def daily_returns(prices):
+        p = np.asarray(prices, dtype=float)
+        pass
+
+    def growth_of_one(returns):
+        pass
+  hints:
+    - "p[1:] / p[:-1] − 1"
+  solution: |
+    import numpy as np
+
+    def daily_returns(prices):
+        p = np.asarray(prices, dtype=float)
+        return p[1:] / p[:-1] - 1
+
+    def growth_of_one(returns):
+        return np.cumprod(1 + np.asarray(returns, dtype=float))
+  tests:
+    - name: "returns are correct"
+      code: |
+        import numpy as np
+        assert np.allclose(daily_returns([100, 110, 99]), [0.10, -0.10])
+    - name: "no Python loop in daily_returns"
+      code: |
+        import inspect
+        src = inspect.getsource(daily_returns)
+        assert "for " not in src and "while " not in src, "a loop is still there"
+    - name: "growth of 1 rebuilds the price path"
+      code: |
+        import numpy as np
+        p = np.array([50, 55, 52, 60.5])
+        assert np.allclose(50 * growth_of_one(daily_returns(p)), p[1:])
+
+- id: py_unit_tests
+  chapter: 21
+  language: python
+  title: "Write a function and its own tests"
+  difficulty: 1
+  prompt: |
+    Professionals test their maths. Write `sharpe_ratio(returns, rf_daily=0.0)` =
+    **mean(r − rf) / std(r − rf, ddof=1) × √252**, then write a function `test_sharpe()` that uses
+    `assert` to check **at least two** properties (for example: doubling every excess return does
+    not change the ratio; returns with zero mean give 0). The grader runs your tests too.
+  starter: |
+    import numpy as np
+
+    def sharpe_ratio(returns, rf_daily=0.0):
+        pass
+
+    def test_sharpe():
+        # your asserts here
+        pass
+  hints:
+    - "ex = np.asarray(returns) - rf_daily"
+  solution: |
+    import numpy as np
+
+    def sharpe_ratio(returns, rf_daily=0.0):
+        ex = np.asarray(returns, float) - rf_daily
+        return float(ex.mean() / ex.std(ddof=1) * np.sqrt(252))
+
+    def test_sharpe():
+        r = np.random.default_rng(0).normal(0.0005, 0.01, 1000)
+        assert abs(sharpe_ratio(2 * r) - sharpe_ratio(r)) < 1e-12
+        z = np.array([0.01, -0.01, 0.02, -0.02])
+        assert abs(sharpe_ratio(z)) < 1e-12
+  tests:
+    - name: "sharpe_ratio is correct"
+      code: |
+        import numpy as np
+        r = np.random.default_rng(4).normal(0.0004, 0.012, 750)
+        ex = r - 0.0001
+        assert abs(sharpe_ratio(r, 0.0001) - ex.mean() / ex.std(ddof=1) * np.sqrt(252)) < 1e-12
+    - name: "your own test_sharpe() passes"
+      code: "test_sharpe()"
+    - name: "your test_sharpe() contains at least two asserts"
+      code: |
+        import inspect
+        assert inspect.getsource(test_sharpe).count("assert") >= 2

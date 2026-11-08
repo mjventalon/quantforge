@@ -1,0 +1,49 @@
+- id: py_ewma
+  chapter: 17
+  language: python
+  title: "EWMA volatility (RiskMetrics)"
+  difficulty: 2
+  prompt: |
+    RiskMetrics updates the variance each day: **σ²ₜ = λ·σ²ₜ₋₁ + (1 − λ)·r²ₜ₋₁**, with λ = 0.94.
+    Write `ewma_vol(returns, lam=0.94)` returning a NumPy array of **daily volatilities** the same
+    length as `returns`. Start from the **variance of the first 20 returns**
+    (`np.var(returns[:20])`) and update with each return in turn, so element `t` is the
+    volatility forecast made **before** seeing `returns[t]`.
+  starter: |
+    import numpy as np
+
+    def ewma_vol(returns, lam=0.94):
+        r = np.asarray(returns, float)
+        var = np.empty(len(r))
+        var[0] = np.var(r[:20])
+        # your code here
+        return np.sqrt(var)
+  hints:
+    - "for t in range(1, len(r)): var[t] = lam * var[t-1] + (1 - lam) * r[t-1] ** 2"
+  solution: |
+    import numpy as np
+
+    def ewma_vol(returns, lam=0.94):
+        r = np.asarray(returns, float)
+        var = np.empty(len(r))
+        var[0] = np.var(r[:20])
+        for t in range(1, len(r)):
+            var[t] = lam * var[t - 1] + (1 - lam) * r[t - 1] ** 2
+        return np.sqrt(var)
+  tests:
+    - name: "same length, positive"
+      code: |
+        import numpy as np
+        r = np.random.default_rng(0).normal(0, 0.01, 300)
+        v = ewma_vol(r); assert v.shape == r.shape and (v > 0).all()
+    - name: "matches the recursion"
+      code: |
+        import numpy as np
+        r = np.random.default_rng(1).normal(0, 0.01, 50)
+        v = ewma_vol(r)
+        assert abs(v[5] ** 2 - (0.94 * v[4] ** 2 + 0.06 * r[4] ** 2)) < 1e-15
+    - name: "volatility jumps after a shock"
+      code: |
+        import numpy as np
+        r = np.full(100, 0.005); r[60] = -0.08
+        v = ewma_vol(r); assert v[61] > 3 * v[60]

@@ -1,0 +1,74 @@
+- id: py_returns
+  chapter: 3
+  language: python
+  title: "Simple, log and annualized returns"
+  difficulty: 1
+  prompt: |
+    Write three functions **without any library** (plain Python + `math`):
+
+    * `simple_return(p0, p1)` — the percentage change from `p0` to `p1` as a decimal (100 → 110 gives `0.10`).
+    * `log_return(p0, p1)` — the natural log of `p1 / p0`.
+    * `annualize(r, periods=252)` — turn a return earned **per period** into an annual return by
+      compounding: `(1 + r) ** periods − 1`.
+  starter: |
+    import math
+
+    def simple_return(p0, p1):
+        # your code here
+        pass
+
+    def log_return(p0, p1):
+        pass
+
+    def annualize(r, periods=252):
+        pass
+  hints:
+    - "simple return = p1 / p0 − 1"
+    - "math.log(x) is the natural logarithm"
+  solution: |
+    import math
+
+    def simple_return(p0, p1):
+        return p1 / p0 - 1
+
+    def log_return(p0, p1):
+        return math.log(p1 / p0)
+
+    def annualize(r, periods=252):
+        return (1 + r) ** periods - 1
+  tests:
+    - name: "simple_return(100, 110) is 0.10"
+      code: "assert abs(simple_return(100, 110) - 0.10) < 1e-12, simple_return(100, 110)"
+    - name: "a fall is negative"
+      code: "assert abs(simple_return(50, 40) + 0.20) < 1e-12"
+    - name: "log_return(100, 110) = ln(1.1)"
+      code: "import math; assert abs(log_return(100, 110) - math.log(1.1)) < 1e-12"
+    - name: "log returns add up over time"
+      code: "assert abs(log_return(100, 121) - 2 * log_return(100, 110)) < 1e-12"
+    - name: "1% a month compounds to 12.68% a year"
+      code: "assert abs(annualize(0.01, 12) - 0.12682503013196977) < 1e-12"
+
+- id: py_cagr
+  chapter: 3
+  language: python
+  title: "Compound annual growth rate (CAGR)"
+  difficulty: 1
+  prompt: |
+    An investment grows from `start` to `end` over `years` years. Write `cagr(start, end, years)`:
+    the constant yearly rate that turns `start` into `end`.
+    Example: 1 000 → 2 000 in 10 years is a CAGR of about **7.18 %**.
+  starter: |
+    def cagr(start, end, years):
+        pass
+  hints:
+    - "Solve start × (1 + g)^years = end for g."
+  solution: |
+    def cagr(start, end, years):
+        return (end / start) ** (1 / years) - 1
+  tests:
+    - name: "doubling in 10 years ≈ 7.177%"
+      code: "assert abs(cagr(1000, 2000, 10) - 0.07177346253629313) < 1e-12"
+    - name: "no growth gives 0"
+      code: "assert abs(cagr(500, 500, 3)) < 1e-15"
+    - name: "it inverts compounding"
+      code: "g = cagr(100, 250, 7.5); assert abs(100 * (1 + g) ** 7.5 - 250) < 1e-9"

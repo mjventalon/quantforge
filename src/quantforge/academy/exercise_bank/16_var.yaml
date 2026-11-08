@@ -1,0 +1,85 @@
+- id: py_var_es
+  chapter: 16
+  language: python
+  title: "Historical VaR and Expected Shortfall"
+  difficulty: 2
+  prompt: |
+    Given daily returns, write
+
+    * `historical_var(returns, level=0.99)` — the loss not exceeded with probability `level`,
+      reported as a **positive** number: `−quantile(returns, 1 − level)` (use `np.quantile`,
+      default linear interpolation).
+    * `expected_shortfall(returns, level=0.99)` — the average loss on days **at or beyond** the
+      VaR: `−mean(returns[returns <= −VaR])`.
+  starter: |
+    import numpy as np
+
+    def historical_var(returns, level=0.99):
+        pass
+
+    def expected_shortfall(returns, level=0.99):
+        pass
+  hints:
+    - "q = np.quantile(r, 1 - level); var = -q"
+  solution: |
+    import numpy as np
+
+    def historical_var(returns, level=0.99):
+        return float(-np.quantile(np.asarray(returns, float), 1 - level))
+
+    def expected_shortfall(returns, level=0.99):
+        r = np.asarray(returns, float)
+        v = historical_var(r, level)
+        return float(-r[r <= -v].mean())
+  tests:
+    - name: "VaR of 1..100% losses"
+      code: |
+        import numpy as np
+        r = -np.arange(1, 101) / 100
+        assert abs(historical_var(r, 0.95) - (-np.quantile(r, 0.05))) < 1e-12
+    - name: "VaR is positive for a normal sample"
+      code: |
+        import numpy as np
+        r = np.random.default_rng(0).normal(0, 0.01, 100_000)
+        assert abs(historical_var(r, 0.99) - 0.0232635) < 4e-4
+    - name: "ES ≥ VaR, and ES ≈ 2.665σ for a normal at 99%"
+      code: |
+        import numpy as np
+        r = np.random.default_rng(0).normal(0, 0.01, 200_000)
+        es, v = expected_shortfall(r), historical_var(r)
+        assert es >= v and abs(es - 0.026652) < 5e-4
+
+- id: cpp_var
+  chapter: 16
+  language: cpp
+  title: "Historical VaR in C++"
+  difficulty: 2
+  prompt: |
+    Write `double historical_var(std::vector<double> r, double level)` returning the **positive**
+    loss at the `1 − level` quantile with **linear interpolation** (the NumPy default): sort,
+    take position `h = (n − 1)·(1 − level)`, and interpolate between `r[floor(h)]` and
+    `r[floor(h) + 1]`.
+  starter: |
+    double historical_var(std::vector<double> r, double level) {
+        // your code here
+        return 0.0;
+    }
+  hints:
+    - "std::sort(r.begin(), r.end());"
+    - "std::size_t i = static_cast<std::size_t>(std::floor(h)); double w = h - i;"
+  solution: |
+    double historical_var(std::vector<double> r, double level) {
+        std::sort(r.begin(), r.end());
+        const double h = (r.size() - 1) * (1.0 - level);
+        const std::size_t i = static_cast<std::size_t>(std::floor(h));
+        const double w = h - i;
+        const double q = i + 1 < r.size() ? r[i] + w * (r[i + 1] - r[i]) : r[i];
+        return -q;
+    }
+  tests: |
+    std::vector<double> r;
+    for (int i = 1; i <= 100; ++i) r.push_back(-i / 100.0);
+    CHECK_NEAR("95% VaR of 1..100% losses = 0.9505", historical_var(r, 0.95), 0.9505, 1e-12);
+    CHECK_NEAR("99% VaR = 0.9901", historical_var(r, 0.99), 0.9901, 1e-12);
+    std::vector<double> mixed = {0.02, -0.01, 0.005, -0.03, 0.01};
+    CHECK_NEAR("unsorted input works (80% → 0.014)", historical_var(mixed, 0.8), 0.014, 1e-12);

@@ -1,0 +1,51 @@
+- id: py_vol_drawdown
+  chapter: 5
+  language: python
+  title: "Annualized volatility and maximum drawdown"
+  difficulty: 2
+  prompt: |
+    Using **NumPy**:
+
+    * `annual_vol(prices)` — daily **log** returns, their **sample** standard deviation
+      (`ddof=1`), times √252.
+    * `max_drawdown(prices)` — the worst fall from a previous peak, as a **negative** decimal
+      (a fall from 120 to 90 is −0.25). Hint: `np.maximum.accumulate`.
+  starter: |
+    import numpy as np
+
+    def annual_vol(prices):
+        prices = np.asarray(prices, dtype=float)
+        pass
+
+    def max_drawdown(prices):
+        prices = np.asarray(prices, dtype=float)
+        pass
+  hints:
+    - "log returns: np.diff(np.log(prices))"
+    - "drawdown = prices / running_peak − 1; take the minimum"
+  solution: |
+    import numpy as np
+
+    def annual_vol(prices):
+        prices = np.asarray(prices, dtype=float)
+        r = np.diff(np.log(prices))
+        return r.std(ddof=1) * np.sqrt(252)
+
+    def max_drawdown(prices):
+        prices = np.asarray(prices, dtype=float)
+        peak = np.maximum.accumulate(prices)
+        return float((prices / peak - 1).min())
+  tests:
+    - name: "volatility matches the definition"
+      code: |
+        import numpy as np
+        rng = np.random.default_rng(0)
+        p = 100 * np.exp(np.cumsum(0.01 * rng.standard_normal(500)))
+        ref = np.diff(np.log(p)).std(ddof=1) * np.sqrt(252)
+        assert abs(annual_vol(p) - ref) < 1e-12
+    - name: "a constant price has zero volatility"
+      code: "assert abs(annual_vol([50] * 30)) < 1e-15"
+    - name: "120 → 90 is a −25% drawdown"
+      code: "assert abs(max_drawdown([100, 120, 110, 90, 115]) + 0.25) < 1e-12"
+    - name: "a rising price has no drawdown"
+      code: "assert max_drawdown([1, 2, 3, 4]) == 0"

@@ -1,0 +1,62 @@
+- id: py_portfolio
+  chapter: 9
+  language: python
+  title: "Portfolio return and risk with matrices"
+  difficulty: 2
+  prompt: |
+    With weights **w**, expected returns **μ** and covariance matrix **Σ**:
+
+    * `port_return(w, mu)` = **wᵀμ**
+    * `port_vol(w, cov)` = **√(wᵀΣw)**
+    * `min_variance_weights(cov)` — the fully-invested minimum-variance portfolio
+      **Σ⁻¹1 / (1ᵀΣ⁻¹1)** (shorting allowed). Use `np.linalg.solve`, not `inv`.
+  starter: |
+    import numpy as np
+
+    def port_return(w, mu):
+        pass
+
+    def port_vol(w, cov):
+        pass
+
+    def min_variance_weights(cov):
+        pass
+  hints:
+    - "w @ mu, np.sqrt(w @ cov @ w)"
+    - "x = np.linalg.solve(cov, np.ones(n)); return x / x.sum()"
+  solution: |
+    import numpy as np
+
+    def port_return(w, mu):
+        return float(np.asarray(w) @ np.asarray(mu))
+
+    def port_vol(w, cov):
+        w = np.asarray(w, float)
+        return float(np.sqrt(w @ np.asarray(cov) @ w))
+
+    def min_variance_weights(cov):
+        cov = np.asarray(cov, float)
+        x = np.linalg.solve(cov, np.ones(len(cov)))
+        return x / x.sum()
+  tests:
+    - name: "return is the weighted average"
+      code: "assert abs(port_return([0.6, 0.4], [0.08, 0.03]) - 0.06) < 1e-12"
+    - name: "two uncorrelated 20%-vol assets, 50/50 → 14.14%"
+      code: |
+        import numpy as np
+        cov = np.diag([0.04, 0.04])
+        assert abs(port_vol([0.5, 0.5], cov) - np.sqrt(0.02)) < 1e-12
+    - name: "minimum-variance weights sum to 1"
+      code: |
+        import numpy as np
+        cov = np.array([[0.04, 0.006, 0.0], [0.006, 0.09, 0.01], [0.0, 0.01, 0.0225]])
+        assert abs(min_variance_weights(cov).sum() - 1) < 1e-12
+    - name: "no other portfolio has lower variance"
+      code: |
+        import numpy as np
+        cov = np.array([[0.04, 0.006, 0.0], [0.006, 0.09, 0.01], [0.0, 0.01, 0.0225]])
+        w = min_variance_weights(cov); v = w @ cov @ w
+        rng = np.random.default_rng(0)
+        for _ in range(500):
+            x = rng.normal(size=3); x /= x.sum()
+            assert x @ cov @ x >= v - 1e-12

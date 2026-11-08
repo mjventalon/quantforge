@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use quantforge in research or teaching, please cite it as below."
+title: "quantforge: open-source quantitative finance on real market data"
+type: software
+authors:
+  - family-names: "Ventalon"
+    given-names: "Marin J."
+version: 1.0.0
+date-released: 2026-11-07
+license: MIT
+keywords:
+  - quantitative finance
+  - option pricing
+  - portfolio optimization
+  - risk management
+  - econometrics
+  - education

@@ -1,0 +1,30 @@
+- id: py_bond
+  chapter: 8
+  language: python
+  title: "Price a coupon bond"
+  difficulty: 2
+  prompt: |
+    Write `bond_price(face, coupon_rate, ytm, years, freq=2)`: the present value of the coupons
+    (`face × coupon_rate / freq` each period) and of the face value at maturity, discounted at
+    `ytm / freq` per period, for `years × freq` periods.
+  starter: |
+    def bond_price(face, coupon_rate, ytm, years, freq=2):
+        pass
+  hints:
+    - "n = int(round(years * freq)); y = ytm / freq; c = face * coupon_rate / freq"
+    - "price = Σ c/(1+y)^t for t=1..n, plus face/(1+y)^n"
+  solution: |
+    def bond_price(face, coupon_rate, ytm, years, freq=2):
+        n = int(round(years * freq))
+        y = ytm / freq
+        c = face * coupon_rate / freq
+        return sum(c / (1 + y) ** t for t in range(1, n + 1)) + face / (1 + y) ** n
+  tests:
+    - name: "a bond with coupon = yield trades at par"
+      code: "assert abs(bond_price(1000, 0.05, 0.05, 10) - 1000) < 1e-9"
+    - name: "higher yield → lower price"
+      code: "assert bond_price(1000, 0.04, 0.06, 10) < bond_price(1000, 0.04, 0.05, 10)"
+    - name: "10y 4% bond at 5% yield = 922.05"
+      code: "assert abs(bond_price(1000, 0.04, 0.05, 10) - 922.0541) < 1e-3"
+    - name: "zero-coupon bond"
+      code: "assert abs(bond_price(100, 0.0, 0.04, 5, 1) - 100 / 1.04 ** 5) < 1e-12"

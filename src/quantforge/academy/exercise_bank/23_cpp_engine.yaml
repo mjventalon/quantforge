@@ -1,0 +1,107 @@
+- id: cpp_monte_carlo
+  chapter: 23
+  language: cpp
+  title: "A Monte-Carlo pricer in C++"
+  difficulty: 3
+  prompt: |
+    Write a struct and a pricer:
+
+    ```cpp
+    struct MCResult { double price; double std_error; };
+    MCResult mc_call(double S, double K, double T, double r, double sigma, long n, unsigned seed);
+    ```
+
+    Use `std::mt19937_64 gen(seed)` and `std::normal_distribution<double> z(0.0, 1.0)` (`<random>` is
+    included). Accumulate the **sum** and **sum of squares** of discounted payoffs in one pass, then
+    `price = sum/n` and `std_error = sqrt((sumsq/n − price²) · n/(n−1) / n)`.
+  starter: |
+    struct MCResult { double price; double std_error; };
+
+    MCResult mc_call(double S, double K, double T, double r, double sigma, long n, unsigned seed) {
+        std::mt19937_64 gen(seed);
+        std::normal_distribution<double> z(0.0, 1.0);
+        // your code here
+        return {0.0, 0.0};
+    }
+  hints:
+    - "double st = S * std::exp((r - 0.5 * sigma * sigma) * T + sigma * std::sqrt(T) * z(gen));"
+  solution: |
+    struct MCResult { double price; double std_error; };
+
+    MCResult mc_call(double S, double K, double T, double r, double sigma, long n, unsigned seed) {
+        std::mt19937_64 gen(seed);
+        std::normal_distribution<double> z(0.0, 1.0);
+        const double drift = (r - 0.5 * sigma * sigma) * T, vol = sigma * std::sqrt(T);
+        const double disc = std::exp(-r * T);
+        double sum = 0.0, sumsq = 0.0;
+        for (long i = 0; i < n; ++i) {
+            const double st = S * std::exp(drift + vol * z(gen));
+            const double pay = disc * std::max(st - K, 0.0);
+            sum += pay;
+            sumsq += pay * pay;
+        }
+        const double mean = sum / n;
+        const double var = (sumsq / n - mean * mean) * n / (n - 1.0);
+        return {mean, std::sqrt(var / n)};
+    }
+  tests: |
+    const MCResult a = mc_call(100, 100, 1, 0.05, 0.2, 1000000, 42);
+    CHECK("standard error is positive", a.std_error > 0);
+    CHECK("within 4 standard errors of Black-Scholes 10.4506", std::fabs(a.price - 10.450583572185565) < 4 * a.std_error);
+    const MCResult b = mc_call(100, 100, 1, 0.05, 0.2, 250000, 1);
+    CHECK("4x the paths halves the error", a.std_error / b.std_error > 0.4 && a.std_error / b.std_error < 0.6);
+
+- id: cpp_implied_vol
+  chapter: 23
+  language: cpp
+  title: "Implied volatility by Newton's method"
+  difficulty: 3
+  prompt: |
+    `bs_call` and `bs_vega` are given. Write
+    `double implied_vol(double price, double S, double K, double T, double r)` that starts at
+    σ = 0.2 and iterates **σ ← σ − (bs_call(σ) − price) / vega(σ)** until the error is below
+    1e-12 (at most 100 iterations). Real desks solve millions of these a day — that is why C++ is used.
+  starter: |
+    double ncdf(double x) { return 0.5 * std::erfc(-x * std::sqrt(0.5)); }
+    double bs_call(double S, double K, double T, double r, double v) {
+        double d1 = (std::log(S / K) + (r + 0.5 * v * v) * T) / (v * std::sqrt(T)), d2 = d1 - v * std::sqrt(T);
+        return S * ncdf(d1) - K * std::exp(-r * T) * ncdf(d2);
+    }
+    double bs_vega(double S, double K, double T, double r, double v) {
+        double d1 = (std::log(S / K) + (r + 0.5 * v * v) * T) / (v * std::sqrt(T));
+        return S * std::sqrt(T) * std::exp(-0.5 * d1 * d1) / 2.5066282746310002;
+    }
+
+    double implied_vol(double price, double S, double K, double T, double r) {
+        double sigma = 0.2;
+        // your Newton loop here
+        return sigma;
+    }
+  hints:
+    - "for (int i = 0; i < 100; ++i) { double diff = bs_call(S, K, T, r, sigma) - price; if (std::fabs(diff) < 1e-12) break; sigma -= diff / bs_vega(S, K, T, r, sigma); }"
+  solution: |
+    double ncdf(double x) { return 0.5 * std::erfc(-x * std::sqrt(0.5)); }
+    double bs_call(double S, double K, double T, double r, double v) {
+        double d1 = (std::log(S / K) + (r + 0.5 * v * v) * T) / (v * std::sqrt(T)), d2 = d1 - v * std::sqrt(T);
+        return S * ncdf(d1) - K * std::exp(-r * T) * ncdf(d2);
+    }
+    double bs_vega(double S, double K, double T, double r, double v) {
+        double d1 = (std::log(S / K) + (r + 0.5 * v * v) * T) / (v * std::sqrt(T));
+        return S * std::sqrt(T) * std::exp(-0.5 * d1 * d1) / 2.5066282746310002;
+    }
+
+    double implied_vol(double price, double S, double K, double T, double r) {
+        double sigma = 0.2;
+        for (int i = 0; i < 100; ++i) {
+            const double diff = bs_call(S, K, T, r, sigma) - price;
+            if (std::fabs(diff) < 1e-12) break;
+            sigma -= diff / bs_vega(S, K, T, r, sigma);
+        }
+        return sigma;
+    }
+  tests: |
+    CHECK_NEAR("recovers 20% from Hull's 4.7594", implied_vol(4.759422392871532, 42, 40, 0.5, 0.10), 0.20, 1e-9);
+    for (double v : {0.1, 0.35, 0.8}) {
+        const double p = bs_call(100, 110, 0.75, 0.03, v);
+        CHECK_NEAR("round trip", implied_vol(p, 100, 110, 0.75, 0.03), v, 1e-9);
+    }

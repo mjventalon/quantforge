@@ -1,0 +1,17 @@
+# Local production-like run:  docker compose up --build   → http://localhost:8501
+services:
+  quantforge:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env            # API keys, QUANTFORGE_CERT_SECRET, QUANTFORGE_SITE_URL…
+    environment:
+      QUANTFORGE_ALLOW_CODE_EXECUTION: "0"   # never run visitors' code on a server
+      QUANTFORGE_DATA_DIR: /data             # paper-trading accounts
+    volumes:
+      - quantforge-data:/data
+    restart: unless-stopped
+
+volumes:
+  quantforge-data:
