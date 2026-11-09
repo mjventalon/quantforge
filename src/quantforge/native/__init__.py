@@ -80,6 +80,9 @@ def build(verbose: bool = False) -> Path:
     cmd = [cxx, "-std=c++17", "-O3", "-shared", "-fPIC", "-fvisibility=hidden",
            f"-I{SOURCE_DIR / 'include'}", str(SOURCE_DIR / "src" / "capi.cpp"), "-o",
            str(out) + ".tmp", "-pthread"]
+    if platform.system() == "Windows":
+        # MinGW: bundle the C++ runtime so the DLL loads without extra DLLs on the PATH
+        cmd += ["-static", "-static-libgcc", "-static-libstdc++"]
     if verbose:
         print(" ".join(cmd))
     proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -100,6 +103,13 @@ def _load() -> ctypes.CDLL | None:
     if not path.exists():
         _load_error = "not built yet — run `quantforge-build-native`"
         return None
+    if platform.system() == "Windows" and hasattr(os, "add_dll_directory"):
+        cxx = _compiler()                     # runtime DLLs of the compiler, if any
+        if cxx and shutil.which(cxx):
+            try:
+                os.add_dll_directory(str(Path(shutil.which(cxx)).parent))
+            except OSError:
+                pass
     try:
         lib = ctypes.CDLL(str(path))
     except OSError as exc:
