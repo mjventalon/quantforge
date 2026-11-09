@@ -37,7 +37,7 @@ dependencies = [
 yahoo = ["yfinance>=0.2.40"]
 viz = ["plotly>=5.18"]
 app = ["streamlit>=1.67", "plotly>=5.18", "yfinance>=0.2.50", "reportlab>=4.0"]
-stats = ["statsmodels>=0.14"]
+stats = ["statsmodels>=0.15.0"]
 all = ["quantforge[app,stats]"]
 dev = ["quantforge[all]", "pytest>=7", "pytest-cov", "ruff", "arch>=6", "hmmlearn>=0.3",
        "scikit-learn>=1.3"]
