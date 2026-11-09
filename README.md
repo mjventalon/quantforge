@@ -7,13 +7,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/actions/workflows/ci.yml"><img src="https://github.com/YOUR_GITHUB_USERNAME/quantforge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/releases"><img src="https://img.shields.io/github/v/release/YOUR_GITHUB_USERNAME/quantforge?color=E4141D&label=release" alt="Release"></a>
-  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
+  <a href="https://github.com/mjventalon/quantforge/actions/workflows/ci.yml"><img src="https://github.com/mjventalon/quantforge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/mjventalon/quantforge/releases"><img src="https://img.shields.io/github/v/release/mjventalon/quantforge?color=E4141D&label=release" alt="Release"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white" alt="C++17">
   <img src="https://img.shields.io/badge/tests-270%2B-2ea44f" alt="Tests">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-black" alt="MIT license"></a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/stargazers"><img src="https://img.shields.io/github/stars/YOUR_GITHUB_USERNAME/quantforge?style=social" alt="Stars"></a>
+  <a href="https://github.com/mjventalon/quantforge/stargazers"><img src="https://img.shields.io/github/stars/mjventalon/quantforge?style=social" alt="Stars"></a>
 </p>
 
 <p align="center">
@@ -21,8 +21,8 @@
   <a href="#-whats-inside"><b>🧰 Tools</b></a> ·
   <a href="docs/tutorials"><b>📚 Tutorials</b></a> ·
   <a href="#-academy"><b>🎓 Academy</b></a> ·
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/releases"><b>⬇️ Download</b></a> ·
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/quantforge/discussions"><b>💬 Discussions</b></a> ·
+  <a href="https://github.com/mjventalon/quantforge/releases"><b>⬇️ Download</b></a> ·
+  <a href="https://github.com/mjventalon/quantforge/discussions"><b>💬 Discussions</b></a> ·
   <a href="https://www.linkedin.com/in/marin-ventalon"><b>👤 Creator</b></a>
 </p>
 
@@ -49,7 +49,7 @@ only**: a Python library, a multithreaded **C++17 pricing engine**, a 25-page re
 ## 🚀 Quick start
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/quantforge.git
+git clone https://github.com/mjventalon/quantforge.git
 cd quantforge
 pip install -e ".[all]"
 quantforge-app
@@ -64,7 +64,7 @@ double-click `Start quantforge.command` (macOS: right-click → **Open** the fir
 <details>
 <summary><b>Step-by-step install (beginners, macOS · Windows · Linux)</b></summary>
 
-1. Install **Python 3.10+** from [python.org](https://www.python.org/downloads/). On Windows,
+1. Install **Python 3.11+** from [python.org](https://www.python.org/downloads/). On Windows,
    tick *Add Python to PATH*.
 2. Download the project: green **Code** button → **Download ZIP**, then unzip it. Or use `git clone`.
 3. Open a terminal in the `quantforge` folder and run:
@@ -304,7 +304,7 @@ Run them: `pytest -q` (Python) and `ctest` (C++).
 
 Contributions are welcome: bug reports, new models, translations, tutorials.
 Start with [CONTRIBUTING.md](CONTRIBUTING.md) and look for issues labelled
-[`good first issue`](https://github.com/YOUR_GITHUB_USERNAME/quantforge/labels/good%20first%20issue). Please read the
+[`good first issue`](https://github.com/mjventalon/quantforge/labels/good%20first%20issue). Please read the
 [Code of conduct](CODE_OF_CONDUCT.md). To report a vulnerability, see [SECURITY.md](SECURITY.md).
 To cite quantforge, see [CITATION.cff](CITATION.cff).
 

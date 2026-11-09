@@ -7,6 +7,9 @@ First public release.
 * New README with screenshots of every tool, a quick start and English | Français links.
 * Double-click launchers: `Start quantforge.command` (macOS) and `Start quantforge.bat`
   (Windows). They install everything on first launch, so no terminal is needed.
+* Python 3.11 or newer is now required (Python 3.10 reached end of life in October 2026, and
+  Streamlit, pandas and scikit-learn no longer support it).
+* C++ engine: added missing standard headers so it compiles with Apple Clang (macOS).
 * GitHub project setup: release workflow (tag `v*` to publish a release with the package),
   support page, code owners, Discussions link for questions.
 

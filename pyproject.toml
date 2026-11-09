@@ -7,7 +7,7 @@ name = "quantforge"
 version = "1.0.0"
 description = "Open-source quantitative finance on real market data: pricing (with a C++ engine), portfolios, risk, econometrics, a research lab and an academy with certificates."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Marin J. Ventalon" }]
 keywords = ["quant", "finance", "options", "black-scholes", "monte-carlo", "portfolio", "risk", "garch", "backtesting", "education", "c++"]
@@ -17,6 +17,9 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: C++",
     "Intended Audience :: Education",
     "Topic :: Office/Business :: Financial :: Investment",
@@ -33,7 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 yahoo = ["yfinance>=0.2.40"]
 viz = ["plotly>=5.18"]
-app = ["streamlit>=1.50", "plotly>=5.18", "yfinance>=0.2.50", "reportlab>=4.0"]
+app = ["streamlit>=1.67", "plotly>=5.18", "yfinance>=0.2.50", "reportlab>=4.0"]
 stats = ["statsmodels>=0.14"]
 all = ["quantforge[app,stats]"]
 dev = ["quantforge[all]", "pytest>=7", "pytest-cov", "ruff", "arch>=6", "hmmlearn>=0.3",
@@ -44,9 +47,9 @@ quantforge-app = "quantforge.cli:app"
 quantforge-build-native = "quantforge.native:main"
 
 [project.urls]
-Documentation = "https://github.com/YOUR_GITHUB_USERNAME/quantforge/tree/main/docs"
-Source = "https://github.com/YOUR_GITHUB_USERNAME/quantforge"
-Issues = "https://github.com/YOUR_GITHUB_USERNAME/quantforge/issues"
+Documentation = "https://github.com/mjventalon/quantforge/tree/main/docs"
+Source = "https://github.com/mjventalon/quantforge"
+Issues = "https://github.com/mjventalon/quantforge/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/quantforge"]

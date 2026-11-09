@@ -5,10 +5,10 @@ analysis. Time: 10 minutes.
 
 ## 1.1 Install
 
-You need Python 3.10 or newer.
+You need Python 3.11 or newer.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/quantforge
+git clone https://github.com/mjventalon/quantforge
 cd quantforge
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate

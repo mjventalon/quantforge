@@ -32,6 +32,7 @@ def offline(monkeypatch, tmp_path):
     monkeypatch.setattr(FredProvider, "inflation_yoy",
                         lambda self, as_of=None: (0.029, pd.Timestamp("2026-09-01")))
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # Windows home
     monkeypatch.delenv("QUANTFORGE_PROVIDER", raising=False)
     for k in ("POLYGON_API_KEY", "FMP_API_KEY", "ALPHAVANTAGE_API_KEY"):
         monkeypatch.delenv(k, raising=False)
@@ -39,7 +40,7 @@ def offline(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("path", TUTORIALS, ids=lambda p: p.stem)
 def test_tutorial_code_runs(path):
-    blocks = re.findall(r"```python\n(.*?)```", path.read_text(), flags=re.S)
+    blocks = re.findall(r"```python\n(.*?)```", path.read_text(encoding="utf-8"), flags=re.S)
     ns: dict = {}
     for block in blocks:
         if "read_csv(" in block:  # needs the reader's own loan file
