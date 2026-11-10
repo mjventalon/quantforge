@@ -1,5 +1,6 @@
 """Paper-trading engine: order types, fills, accounting, margin, persistence."""
 
+import pandas as pd
 import pytest
 
 from quantforge.paper import Account, Order, OrderError, Quote, target_orders
@@ -151,3 +152,14 @@ def test_persistence_roundtrip(tmp_path, monkeypatch):
     assert load_wallet(new_wallet_id()) == []
     with pytest.raises(ValueError):
         load_wallet("../../x")
+
+
+def test_intraday_bar_times_are_converted_to_utc():
+    """Stock bars come in New York time: 09:50 in New York is 14:50 UTC in November."""
+    from quantforge.app.paper_widgets import bar_time_utc
+
+    assert bar_time_utc("2026-11-10 09:50", "AAPL") == pd.Timestamp("2026-11-10 14:50", tz="UTC")
+    assert bar_time_utc("2026-07-10 09:50", "SPY") == pd.Timestamp("2026-07-10 13:50", tz="UTC")
+    assert bar_time_utc("2026-11-10 09:50", "BTC-USD") == pd.Timestamp("2026-11-10 09:50", tz="UTC")
+    aware = pd.Timestamp("2026-11-10 09:50", tz="America/New_York")
+    assert bar_time_utc(aware, "AAPL") == pd.Timestamp("2026-11-10 14:50", tz="UTC")

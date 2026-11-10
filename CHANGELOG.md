@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Paper trading: the order ticket showed New York time labelled as UTC (for example
+  09:50 instead of 14:50 UTC). Intraday bar times are now converted to UTC correctly.
+
 ## 1.0.0 — 2026-11-07
 
 First public release.

@@ -17,6 +17,19 @@ from quantforge.viz.theme import apply as themed
 # ------------------------------------------------------------------ real prices
 
 
+def bar_time_utc(ts, symbol: str) -> pd.Timestamp:
+    """UTC time of an intraday bar.
+
+    ``MarketData.intraday`` returns exchange-local times without a timezone: New York time for
+    stocks and ETFs, UTC for crypto (``-USD``) and currencies (``=X``).
+    """
+    ts = pd.Timestamp(ts)
+    if ts.tzinfo is None:
+        exchange_tz = "UTC" if symbol.upper().endswith(("-USD", "=X")) else "America/New_York"
+        ts = ts.tz_localize(exchange_tz)
+    return ts.tz_convert("UTC")
+
+
 @st.cache_data(ttl=15, show_spinner=False)
 def live_quote(provider: str, symbol: str) -> tuple[float, str, str]:
     """Latest price, its UTC timestamp and its exchange session date."""
@@ -24,9 +37,8 @@ def live_quote(provider: str, symbol: str) -> tuple[float, str, str]:
         bars = md().intraday(symbol, "5d", "1m").dropna(subset=["close"])
         if bars.empty:
             raise ValueError("no intraday bars")
-        ts = pd.Timestamp(bars.index[-1])
-        local = ts if ts.tzinfo else ts.tz_localize("UTC")
-        return (float(bars["close"].iloc[-1]), local.tz_convert("UTC").isoformat(),
+        local = pd.Timestamp(bars.index[-1])
+        return (float(bars["close"].iloc[-1]), bar_time_utc(local, symbol).isoformat(),
                 local.strftime("%Y-%m-%d"))
     except Exception:  # noqa: BLE001 - fall back to the last daily close
         h = md().history(symbol, date.today() - timedelta(days=14), date.today())
