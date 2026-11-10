@@ -238,3 +238,28 @@ def test_live_market_long_history():
     next(s for s in at.selectbox if s.label == "Range").set_value("All history · weekly").run()
     assert not at.exception, [e.message for e in at.exception]
     assert not at.error, [e.value for e in at.error]
+
+
+def test_cpp_engine_chain_survives_quotes_outside_bounds(monkeypatch):
+    """A real chain can hold a quote below its no-arbitrage bound (stale price, dividends):
+    the C++ vs Python comparison must skip it, not crash."""
+    from quantforge import native
+    if not native.available():
+        try:
+            native.build()
+        except native.NativeError as exc:
+            pytest.skip(f"no C++ toolchain: {exc}")
+    original = FixtureProvider._fetch_option_chain
+
+    def with_bad_quote(self, ticker, expiry):
+        chain = original(self, ticker, expiry)
+        bad = chain[chain["type"] == "call"].iloc[[0]].copy()   # deep in-the-money call
+        bad[["bid", "ask"]] = [[0.5, 0.6]]                        # far below S - K e^-rT
+        return pd.concat([chain, bad], ignore_index=True)
+
+    monkeypatch.setattr(FixtureProvider, "_fetch_option_chain", with_bad_quote)
+    at = _open("21_Cpp_engine.py", 300)
+    [b for b in at.button if b.label.startswith("Compute the chain")][0].click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    table = at.dataframe[-1].value
+    assert "Outside bounds" in table.columns and table["Outside bounds"].sum() >= 1

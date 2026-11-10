@@ -22,6 +22,19 @@ from quantforge.app.common import (
 from quantforge.pricing import implied_volatility
 from quantforge.viz.theme import apply as apply_theme
 
+
+def iv_or_nan(price: float, spot: float, strike: float, maturity: float, rate: float,
+              option_type: str) -> float:
+    """Python implied vol with the C++ engine's convention: NaN for an unsolvable quote.
+
+    Real chains contain quotes outside the no-arbitrage bounds (stale prices, or dividends,
+    which this comparison ignores); one of them must not stop the whole comparison.
+    """
+    try:
+        return float(implied_volatility(price, spot, strike, maturity, rate, option_type))
+    except ValueError:
+        return float("nan")
+
 HOW_TO = """1. Check the **status** box. If the engine is not built, press **Build the C++ engine**
    (needs a C++ compiler: on a Mac run `xcode-select --install` once).
 2. Pick a ticker: the inputs (spot, 1-year historical volatility, 3-month Treasury rate) are real.
@@ -109,7 +122,7 @@ if st.button("Compute the chain's implied vols in both engines"):
         cpp = native.implied_vol(*args, typ)
         tc = time.perf_counter() - t0
         t0 = time.perf_counter()
-        py = np.array([implied_volatility(p, spot, k, tt, r, typ)
+        py = np.array([iv_or_nan(p, spot, k, tt, r, typ)
                        for p, k, tt in zip(args[0], args[2], args[3])], dtype=float)
         tp = time.perf_counter() - t0
         res[typ] = (cpp, py, tc, tp)
@@ -117,6 +130,7 @@ if st.button("Compute the chain's implied vols in both engines"):
     for typ, (cpp, py, tc, tp) in res.items():
         both = np.isfinite(cpp) & np.isfinite(py)
         rows.append({"Type": typ, "Quotes": len(cpp), "Solved": int(both.sum()),
+                     "Outside bounds": int((~np.isfinite(py)).sum()),
                      "Max |C++ − Python|": float(np.abs(cpp[both] - py[both]).max())
                      if both.any() else np.nan,
                      "C++ (ms)": tc * 1e3, "Python (ms)": tp * 1e3,
@@ -127,4 +141,6 @@ if st.button("Compute the chain's implied vols in both engines"):
                  hide_index=True, width="stretch")
     st.caption(source_note(f"{len(chain)} quotes with a valid bid/ask across "
                            f"{chain['expiry'].nunique()} expiries; mid prices; "
-                           "no dividend adjustment."))
+                           "no dividend adjustment. Quotes outside the no-arbitrage bounds "
+                           "(stale prices, or dividends) have no implied vol and are skipped "
+                           "by both engines."))
