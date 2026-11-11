@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 — 2026-11-11
+
+First public release.
+
+### Highlights
+
+* Python library, C++17 pricing engine, 25-page research web app, paper trading with
+  $1,000,000 of virtual money and a 23-chapter Academy with verifiable certificates.
+* Real market data only (Yahoo Finance, FRED, Massive/Polygon, FMP, Alpha Vantage).
+* Tested on Linux, Windows and macOS with Python 3.11–3.13.
+
+### Fixed before release
 
 * README: real screenshots of every tool, taken on live market data.
 * CI: macOS runs the test suite on Python 3.12 only (Linux and Windows keep 3.11–3.13).
@@ -13,9 +24,7 @@
 * Paper trading: the order ticket showed New York time labelled as UTC (for example
   09:50 instead of 14:50 UTC). Intraday bar times are now converted to UTC correctly.
 
-## 1.0.0 — 2026-11-07
-
-First public release.
+### Project
 
 * New README with screenshots of every tool, a quick start and English | Français links.
 * Double-click launchers: `Start quantforge.command` (macOS) and `Start quantforge.bat`
