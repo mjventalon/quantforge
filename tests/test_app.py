@@ -263,3 +263,25 @@ def test_cpp_engine_chain_survives_quotes_outside_bounds(monkeypatch):
     assert not at.exception, [e.message for e in at.exception]
     table = at.dataframe[-1].value
     assert "Outside bounds" in table.columns and table["Outside bounds"].sum() >= 1
+
+
+def test_paper_trading_live_chart_with_a_fill():
+    """A filled buy (stored in UTC) is drawn on the chart of exchange-time bars."""
+    from quantforge.paper import Account, Order, Quote
+    from quantforge.paper.store import new_wallet_id, save_wallet
+
+    acc = Account(slippage_bps=0.0)
+    today = date.today().isoformat()
+    acc.submit(Order("AAPL", "buy", 10, "market"), Quote(100.0, f"{today}T14:00:00+00:00", today))
+    acc.process({"AAPL": Quote(100.5, f"{today}T14:50:00+00:00", today)})
+    assert acc.fills, "the order should have filled"
+    wid = new_wallet_id()
+    save_wallet(wid, [acc])
+
+    at = AppTest.from_file(str(APP / "app.py"), default_timeout=300)
+    at.run()
+    at.switch_page("pages/23_Paper_trading.py")
+    at.session_state["pt_wallet"] = wid
+    at.run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert not [e.value for e in at.error if "Live chart" in e.value], [e.value for e in at.error]

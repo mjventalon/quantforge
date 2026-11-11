@@ -163,3 +163,17 @@ def test_intraday_bar_times_are_converted_to_utc():
     assert bar_time_utc("2026-11-10 09:50", "BTC-USD") == pd.Timestamp("2026-11-10 09:50", tz="UTC")
     aware = pd.Timestamp("2026-11-10 09:50", tz="America/New_York")
     assert bar_time_utc(aware, "AAPL") == pd.Timestamp("2026-11-10 14:50", tz="UTC")
+
+
+def test_fill_times_are_placed_on_the_bars_clock():
+    """A buy filled at 14:50 UTC sits on the 09:50 New York bar of a timezone-less chart."""
+    from quantforge.app.paper_widgets import fill_times_on_bars
+
+    naive_bars = pd.DatetimeIndex(["2026-11-10 09:45", "2026-11-10 09:50"])
+    t = fill_times_on_bars(["2026-11-10T14:50:00+00:00"], "AAPL", naive_bars)
+    assert t.tz is None and t[0] == pd.Timestamp("2026-11-10 09:50")
+    assert (t >= naive_bars[0]).all()            # comparable with the bars: no tz error
+    crypto = fill_times_on_bars(["2026-11-10T14:50:00+00:00"], "BTC-USD", naive_bars)
+    assert crypto[0] == pd.Timestamp("2026-11-10 14:50")
+    aware_bars = naive_bars.tz_localize("America/New_York")
+    assert fill_times_on_bars(["2026-11-10T14:50:00+00:00"], "AAPL", aware_bars)[0] == aware_bars[1]
