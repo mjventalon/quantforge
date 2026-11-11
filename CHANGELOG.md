@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* README: real screenshots of every tool, taken on live market data.
 * CI: macOS runs the test suite on Python 3.12 only (Linux and Windows keep 3.11–3.13).
   Free macOS runners are scarce and the extra jobs were cancelled while queued.
 * Paper trading: the live chart failed with "Cannot compare tz-naive and tz-aware timestamps"
