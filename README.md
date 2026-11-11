@@ -122,7 +122,10 @@ come back to it.
 
 ### 🧮 Options: pricing, volatility surfaces, strategies
 
-<p align="center"><img src="docs/assets/screenshots/vol-surface.png" alt="Volatility surface" width="900"></p>
+<p align="center">
+  <img src="docs/assets/screenshots/vol-smiles.png" alt="Implied-volatility smiles on SPY" width="49%">
+  <img src="docs/assets/screenshots/vol-surface.png" alt="3-D implied-volatility surface" width="49%">
+</p>
 
 * Black-Scholes-Merton and Greeks, Black-76, implied volatility
 * CRR and Leisen-Reimer trees (American), Monte-Carlo with variance reduction, 8 barrier types
@@ -131,7 +134,10 @@ come back to it.
 
 ### 🌀 Advanced models: Heston · SABR · jumps
 
-<p align="center"><img src="docs/assets/screenshots/advanced-models.png" alt="Heston, SABR and Merton" width="900"></p>
+<p align="center">
+  <img src="docs/assets/screenshots/advanced-models.png" alt="SABR and Heston calibrated to NVDA options" width="49%">
+  <img src="docs/assets/screenshots/heston-surface.png" alt="Heston implied-volatility surface" width="49%">
+</p>
 
 * **Heston** stochastic volatility (semi-analytic and Monte-Carlo)
 * **SABR** (Hagan 2002) and **Merton jump-diffusion**
@@ -150,7 +156,10 @@ come back to it.
 
 ### 📊 Portfolio & risk
 
-<p align="center"><img src="docs/assets/screenshots/portfolio.png" alt="Portfolio optimiser" width="900"></p>
+<p align="center">
+  <img src="docs/assets/screenshots/portfolio.png" alt="Efficient frontier" width="49%">
+  <img src="docs/assets/screenshots/portfolio-backtest.png" alt="Growth of $1 by portfolio" width="49%">
+</p>
 
 * Markowitz family, Ledoit-Wolf, risk parity, Black-Litterman, CAPM, factor exposures
 * Wealth simulator (block bootstrap with real CPI inflation)
@@ -160,7 +169,7 @@ come back to it.
 
 ### 🤖 AI copilot
 
-<p align="center"><img src="docs/assets/screenshots/copilot.png" alt="AI copilot" width="900"></p>
+<p align="center"><img src="docs/assets/screenshots/copilot.png" alt="AI copilot" width="320"></p>
 
 Connect **Claude, ChatGPT or Gemini** with your own API key. The copilot explains every field,
 suggests settings, or fills in the page and runs it for you. It needs your permission for each AI,
@@ -182,7 +191,7 @@ implementation to about 1e-10 and is many times faster.
 **"rewrite it yourself" exercises in Python and C++** with automatic grading, quizzes and
 **PDF certificates that anyone can verify**.
 
-<p align="center"><img src="docs/assets/screenshots/certificate.png" alt="Certificate" width="900"></p>
+<p align="center"><img src="docs/assets/screenshots/certificate.png" alt="Example certificate" width="640"><br><sub>Example certificate</sub></p>
 
 ## 🐍 Use it as a library
 
