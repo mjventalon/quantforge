@@ -30,6 +30,21 @@ def bar_time_utc(ts, symbol: str) -> pd.Timestamp:
     return ts.tz_convert("UTC")
 
 
+def fill_times_on_bars(ts_list, symbol: str, bar_index: pd.Index) -> pd.DatetimeIndex:
+    """Fill times placed on the clock of the chart's bars (the inverse of ``bar_time_utc``).
+
+    Fills are stored in UTC; intraday bars use exchange-local times, without a timezone for
+    the default providers. Older saved wallets may hold timezone-less fill times: they are
+    read as UTC, as they were labelled.
+    """
+    t = pd.to_datetime(list(ts_list), utc=True)
+    tz = getattr(bar_index, "tz", None)
+    if tz is not None:
+        return t.tz_convert(tz)
+    exchange_tz = "UTC" if symbol.upper().endswith(("-USD", "=X")) else "America/New_York"
+    return t.tz_convert(exchange_tz).tz_localize(None)
+
+
 @st.cache_data(ttl=15, show_spinner=False)
 def live_quote(provider: str, symbol: str) -> tuple[float, str, str]:
     """Latest price, its UTC timestamp and its exchange session date."""
@@ -235,9 +250,7 @@ def w_live_chart(acc: Account, quotes, save) -> None:
                                    increasing_line_color=GAIN, decreasing_line_color=LOSS))
     fl = [f for f in acc.fills if f.symbol == s]
     if fl:
-        t = pd.to_datetime([f.ts for f in fl], utc=True)
-        if bars.index.tz is not None:
-            t = t.tz_convert(bars.index.tz)
+        t = fill_times_on_bars([f.ts for f in fl], s, bars.index)
         for side, sym, col in (("buy", "triangle-up", GAIN), ("sell", "triangle-down", LOSS)):
             m = [i for i, f in enumerate(fl) if f.side == side]
             if m:
