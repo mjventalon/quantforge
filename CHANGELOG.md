@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* CI: macOS runs the test suite on Python 3.12 only (Linux and Windows keep 3.11–3.13).
+  Free macOS runners are scarce and the extra jobs were cancelled while queued.
+* Paper trading: the live chart failed with "Cannot compare tz-naive and tz-aware timestamps"
+  once an order had filled. Fill markers are now placed on the chart's exchange-time bars.
+* C++ engine page: comparing implied vols on a live chain crashed when one quote was outside
+  the no-arbitrage bounds (stale price, or dividends). Such quotes are now skipped by both
+  engines and counted in an "Outside bounds" column.
 * Paper trading: the order ticket showed New York time labelled as UTC (for example
   09:50 instead of 14:50 UTC). Intraday bar times are now converted to UTC correctly.
 
