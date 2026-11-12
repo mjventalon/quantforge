@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* CI: macOS runs once a day in a separate workflow (`macos.yml`) instead of on every pull
+  request, so cancelled macOS jobs no longer mark pull requests and the README badge as failing.
+
 ## 1.0.0 — 2026-11-11
 
 First public release.
