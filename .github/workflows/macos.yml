@@ -1,0 +1,38 @@
+name: macOS
+
+# Free macOS runners are scarce, so macOS is tested once a day (and on demand)
+# instead of on every pull request. Linux and Windows run on every pull request in ci.yml.
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Build the C++ engine
+        run: quantforge-build-native
+      - name: Test
+        run: pytest -q
+
+  cpp:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure, build and test (CMake)
+        run: |
+          cmake -S src/quantforge/native/cpp -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          ctest --test-dir build -C Release --output-on-failure
